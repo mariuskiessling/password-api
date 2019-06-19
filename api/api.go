@@ -24,7 +24,7 @@ func Serve(port int) {
 
 func setupRoutes(router *httprouter.Router) *httprouter.Router {
 	router.GET("/ping", handlers.Ping)
-	router.POST("password", handlers.GeneratePassword)
+	router.POST("/password", handlers.GeneratePassword)
 
 	return router
 }
