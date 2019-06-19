@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: Password Generator
+  description: Generate a *secure* password based on the supplied options.
+  version: v1
+paths:
+  /ping:
+    get:
+      summary: Perform a ping / pong health check.
+      responses:
+        200:
+          description: Return a *pong* indicating a healthy service.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+  /password:
+    post:
+      summary: Generate a password, encrypt and store it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordProperties'
+      responses: 
+        201:
+          description: Password successfully generated, encrypted and stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  password:
+                    type: string
+                    example: X8bdo8_wvPRqQvCLQP4p*rQ9NAB6Umnz
+                  alternatives:
+                    type: array
+                    items:
+                      type: string
+        400:
+          description: Any given input parameter does not match its requirements. The error message will further specify the name of the parameter and the error associated with it..
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorPasswordTooShort'
+
+components:
+  schemas:
+    PasswordProperties:
+      type: object
+      properties:
+        alternatives:
+          type: integer
+        public_key:
+          description: 'The public key that will be used to encrypt and store the password. Only public keys formatted using *PKCS#8* (RFC 5208) are supported.'
+          type: string
+          example: |
+            -----BEGIN PUBLIC KEY-----
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7cnq0P7dtzpY3mHGk [...]
+            -----END PUBLIC KEY-----
+
+        options:
+          type: object
+          properties:
+            length:
+              type: integer
+              minimum: 8
+              maximum: 8192
+            special_characters:
+              type: integer
+            numbers:
+              type: integer
+    ErrorPasswordTooShort:
+      type: object
+      properties:
+        error:
+          type: string
+          example: The provided password length is too short.
