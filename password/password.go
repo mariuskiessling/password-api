@@ -2,8 +2,10 @@ package password
 
 import (
 	"crypto/rand"
+	"fmt"
 	"log"
 	"math/big"
+	"strconv"
 )
 
 // A Generator is used to store all options needed to generate a password.
@@ -80,14 +82,35 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 
 	// Step 1: Populate the password array only with random letters (both upper- and lower case)
 	for i := 0; i < gen.Length; i++ {
-		bigR, err := rand.Int(rand.Reader, big.NewInt(52))
-		r := bigR.Int64()
-		if err != nil {
-			log.Fatal("Something went completely wrong while generating random numbers...")
+		pw[i] = mapping[generateNumber(52)]
+	}
+
+	// Step 2: Place gen.numbers random numbers in random locations of the character password
+	for i := 0; i < gen.Numbers; i++ {
+		index := generateNumber(int64(gen.Length))
+
+		// Generate a new index while the generated index contains a number
+		for pw[index] >= 48 && pw[index] <= 57 {
+			index = generateNumber(int64(gen.Length))
 		}
 
-		pw[i] = mapping[r]
+		// TODO: Rewrite this ugly conversion from int -> string -> []byte -> byte
+		r := []byte(strconv.Itoa(generateNumber(10)))
+		fmt.Println(index, r)
+		pw[index] = r[0]
 	}
 
 	return string(pw), nil
+}
+
+func generateNumber(max int64) int {
+	// Note that this creates the interval [0, max) thus including 0 and
+	// excluding max.
+	bigR, err := rand.Int(rand.Reader, big.NewInt(max))
+
+	if err != nil {
+		log.Fatal("Something went completely wrong while generating random numbers...")
+	}
+
+	return int(bigR.Int64())
 }
