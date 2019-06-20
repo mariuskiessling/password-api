@@ -93,14 +93,12 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 	pw, replacedVowels := generateVowelReplacements(pw, gen.Numbers)
 
 	// Step 3: Place gen.numbers random numbers in random locations of the character password
-	pw, _ = generateNumberReplacements(pw, gen.Numbers-replacedVowels)
+	pw = generateNumberReplacements(pw, gen.Numbers-replacedVowels)
 
 	return string(pw), nil
 }
 
-func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte, replacedNumbers int) {
-	replacedNumbers = 0
-
+func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
 	for i := 0; i < maxNumbers; i++ {
 		index := generateNumber(int64(len(b)))
 
@@ -113,18 +111,16 @@ func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte, replacedNu
 		r := []byte(strconv.Itoa(generateNumber(10)))
 		//fmt.Println(index, r)
 		b[index] = r[0]
-
-		replacedNumbers++
 	}
 
-	return b, replacedNumbers
+	return b
 }
 
 func generateVowelReplacements(b []byte, maxNumbers int) (pw []byte, replacedVowels int) {
 	replacedVowels = 0
 
 	for i := 0; i < len(b); i++ {
-		if _, ok := mappingVowelToNumber[b[i]]; ok {
+		if _, ok := mappingVowelToNumber[b[i]]; ok && replacedVowels < maxNumbers {
 			// Generate random binary number that will determine wether the vowel
 			// will be replaced with a number
 			replaceVowel := generateNumber(2)
