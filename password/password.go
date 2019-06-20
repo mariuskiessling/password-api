@@ -40,22 +40,30 @@ var (
 
 // Generate generates a password for the given Generator options and *n* alternative passwords.
 func (gen *Generator) Generate(numAlternatives int) (password string, alternatives []string) {
-	// We will not introduce a recursive function to generate a random string of
-	// the needed length due to the 'newly' introduced string builder. This
-	// dramatically reduces the number of memory operations needed.
+	password = gen.GeneratePassword()
 
+	for i := 0; numAlternatives != 0 && i < numAlternatives; i++ {
+		alternatives = append(alternatives, gen.GeneratePassword())
+	}
+
+	return
+}
+
+// GeneratePassword ... Todo: Add documentation
+func (gen *Generator) GeneratePassword() (password string) {
 	// Step 1: Populate the password array only with random letters (both upper- and lower case)
 	pw := generateLetterBytes(gen.Length)
 
 	// Step 2: Randomly replace vowels with their mapped numbers
 	pw, replacedVowels := generateVowelReplacements(pw, gen.Numbers)
 
-	// Step 3: Place gen.numbers random numbers in random locations of the character password
+	// Step 3: Place gen.numbers random numbers in random locations of the password
 	pw = generateNumberReplacements(pw, gen.Numbers-replacedVowels)
 
+	// Step 4: Place gen.specialCharacters random chars in random locations of the password
 	pw = generateSpecialCharsReplacements(pw, gen.SpecialCharacters)
 
-	return string(pw), nil
+	return string(pw)
 }
 
 func generateSpecialCharsReplacements(b []byte, chars int) (pw []byte) {
