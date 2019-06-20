@@ -16,7 +16,7 @@ type Generator struct {
 }
 
 var (
-	mapping = []byte{
+	letters = []byte{
 		'a',
 		'b',
 		'c',
@@ -70,6 +70,14 @@ var (
 		'Y',
 		'Z',
 	}
+
+	mappingVowelToNumber = map[byte]byte{
+		'A': '4',
+		'E': '3',
+		'I': '1',
+		'O': '0',
+		'U': '8',
+	}
 )
 
 // Generate generates a password for the given Generator options and *n* alternative passwords.
@@ -78,29 +86,61 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 	// the needed length due to the 'newly' introduced string builder. This
 	// dramatically reduces the number of memory operations needed.
 
-	pw := make([]byte, gen.Length)
-
 	// Step 1: Populate the password array only with random letters (both upper- and lower case)
-	for i := 0; i < gen.Length; i++ {
-		pw[i] = mapping[generateNumber(52)]
-	}
+	pw := generateLetterBytes(gen.Length)
 
-	// Step 2: Place gen.numbers random numbers in random locations of the character password
-	for i := 0; i < gen.Numbers; i++ {
+	// Step 2: Randomly replace vowels with their mapped numbers
+	pw, replacedVowels := generateVowelReplacements(pw, gen.Numbers)
+
+	// Step 3: Place gen.numbers random numbers in random locations of the character password
+	for i := 0; i < gen.Numbers-replacedVowels; i++ {
 		index := generateNumber(int64(gen.Length))
 
 		// Generate a new index while the generated index contains a number
-		for pw[index] >= 48 && pw[index] <= 57 {
+		for byteIsNumber(pw[index]) {
 			index = generateNumber(int64(gen.Length))
 		}
 
 		// TODO: Rewrite this ugly conversion from int -> string -> []byte -> byte
 		r := []byte(strconv.Itoa(generateNumber(10)))
-		fmt.Println(index, r)
+		//fmt.Println(index, r)
 		pw[index] = r[0]
 	}
 
 	return string(pw), nil
+}
+
+func generateVowelReplacements(b []byte, maxNumbers int) (pw []byte, replacedVowels int) {
+	replacedVowels = 0
+
+	for i := 0; i < len(b); i++ {
+		if _, ok := mappingVowelToNumber[b[i]]; ok {
+			// Generate random binary number that will determine wether the vowel
+			// will be replaced with a number
+			replaceVowel := generateNumber(2)
+			if replaceVowel == 1 {
+				oldPw := append(make([]byte, 0, len(b)), b...)
+
+				b[i] = mappingVowelToNumber[b[i]]
+
+				fmt.Printf("--\n%v -> %v\n--\n", string(oldPw), string(b))
+
+				replacedVowels++
+			}
+		}
+	}
+
+	return b, replacedVowels
+}
+
+func generateLetterBytes(length int) (b []byte) {
+	b = make([]byte, length)
+
+	for i := 0; i < length; i++ {
+		b[i] = letters[generateNumber(int64(len(letters)))]
+	}
+
+	return
 }
 
 func generateNumber(max int64) int {
@@ -113,4 +153,8 @@ func generateNumber(max int64) int {
 	}
 
 	return int(bigR.Int64())
+}
+
+func byteIsNumber(b byte) bool {
+	return b >= 48 && b <= 57
 }
