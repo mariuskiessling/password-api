@@ -93,21 +93,31 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 	pw, replacedVowels := generateVowelReplacements(pw, gen.Numbers)
 
 	// Step 3: Place gen.numbers random numbers in random locations of the character password
-	for i := 0; i < gen.Numbers-replacedVowels; i++ {
-		index := generateNumber(int64(gen.Length))
+	pw, _ = generateNumberReplacements(pw, gen.Numbers-replacedVowels)
+
+	return string(pw), nil
+}
+
+func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte, replacedNumbers int) {
+	replacedNumbers = 0
+
+	for i := 0; i < maxNumbers; i++ {
+		index := generateNumber(int64(len(b)))
 
 		// Generate a new index while the generated index contains a number
-		for byteIsNumber(pw[index]) {
-			index = generateNumber(int64(gen.Length))
+		for byteIsNumber(b[index]) {
+			index = generateNumber(int64(len(b)))
 		}
 
 		// TODO: Rewrite this ugly conversion from int -> string -> []byte -> byte
 		r := []byte(strconv.Itoa(generateNumber(10)))
 		//fmt.Println(index, r)
-		pw[index] = r[0]
+		b[index] = r[0]
+
+		replacedNumbers++
 	}
 
-	return string(pw), nil
+	return b, replacedNumbers
 }
 
 func generateVowelReplacements(b []byte, maxNumbers int) (pw []byte, replacedVowels int) {
