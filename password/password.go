@@ -1,6 +1,7 @@
 package password
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"log"
@@ -17,58 +18,15 @@ type Generator struct {
 
 var (
 	letters = []byte{
-		'a',
-		'b',
-		'c',
-		'd',
-		'e',
-		'f',
-		'g',
-		'h',
-		'i',
-		'j',
-		'k',
-		'l',
-		'm',
-		'n',
-		'o',
-		'p',
-		'q',
-		'r',
-		's',
-		't',
-		'u',
-		'v',
-		'w',
-		'x',
-		'y',
-		'z',
-		'A',
-		'B',
-		'C',
-		'D',
-		'E',
-		'F',
-		'G',
-		'H',
-		'I',
-		'J',
-		'K',
-		'L',
-		'M',
-		'N',
-		'O',
-		'P',
-		'Q',
-		'R',
-		'S',
-		'T',
-		'U',
-		'V',
-		'W',
-		'X',
-		'Y',
-		'Z',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+		'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D',
+		'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+		'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	}
+
+	specialCharacters = []byte{
+		'!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+		':', ';', '<', '=', '>', '?', '@', '[', ']',
 	}
 
 	mappingVowelToNumber = map[byte]byte{
@@ -95,15 +53,32 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 	// Step 3: Place gen.numbers random numbers in random locations of the character password
 	pw = generateNumberReplacements(pw, gen.Numbers-replacedVowels)
 
+	pw = generateSpecialCharsReplacements(pw, gen.SpecialCharacters)
+
 	return string(pw), nil
 }
 
-func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
-	for i := 0; i < maxNumbers; i++ {
+func generateSpecialCharsReplacements(b []byte, chars int) (pw []byte) {
+	for i := 0; i < chars; i++ {
 		index := generateNumber(int64(len(b)))
 
 		// Generate a new index while the generated index contains a number
 		for byteIsNumber(b[index]) {
+			index = generateNumber(int64(len(b)))
+		}
+
+		b[index] = specialCharacters[generateNumber(int64(len(specialCharacters)))]
+	}
+
+	return b
+}
+func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
+	for i := 0; i < maxNumbers; i++ {
+		index := generateNumber(int64(len(b)))
+
+		// Generate a new index while the generated index contains a number or is
+		// already replaced with a special character
+		for byteIsNumber(b[index]) || bytes.Contains(specialCharacters, []byte{b[index]}) {
 			index = generateNumber(int64(len(b)))
 		}
 
