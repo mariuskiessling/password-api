@@ -24,7 +24,12 @@ func Init() (store *Store) {
 
 // Add stores a password in the store using the user's public key.
 func (store *Store) Add(fingerprint string, tag string, password string) (err error) {
-	if _, ok := store.passwords[fingerprint][tag]; !ok {
+	// Initialize fingerprint map if fingerprint is unknown
+	if _, ok := store.passwords[fingerprint]; !ok {
+		store.passwords[fingerprint] = make(map[string][]string)
+	}
+
+	if _, ok := store.passwords[fingerprint][tag]; ok {
 		return errors.New("The tag is already in use.")
 	}
 
