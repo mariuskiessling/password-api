@@ -13,9 +13,11 @@ import (
 var store *password.Store = password.Init()
 
 type generatePasswordBody struct {
-	Alternatives int    `json:"alternatives"`
-	PublicKey    string `json:"public_key"`
-	Options      struct {
+	Tag                  string `json:"tag"`
+	Alternatives         int    `json:"alternatives"`
+	PublicKey            string `json:"public_key"`
+	PublicKeyFingerprint string `json:"public_key_fingerprint"`
+	Options              struct {
 		Length            int `json:"length"`
 		SpecialCharacters int `json:"special_characters"`
 		Numbers           int `json:"numbers"`
