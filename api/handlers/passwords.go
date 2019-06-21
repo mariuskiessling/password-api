@@ -45,12 +45,6 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 		return
 	}
 
-	// TODO: Add check for required arguments
-	// Check for required fields
-	if &body.Tag == nil {
-		fmt.Println("daoiwjdoaiwjd")
-	}
-
 	gen := password.Generator{
 		Length:            body.Options.Length,
 		Numbers:           body.Options.Numbers,
@@ -69,13 +63,22 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 		return
 	}
 
-	// TODO: Add encryption of passwords before storing
-	err = store.Add(pk.Fingerprint, body.Tag, pw)
-	for _, pwa := range alternatives {
-		err = store.Add(pk.Fingerprint, body.Tag, pwa)
-	}
-	if err != nil {
-		writeError("Generated passwords could not be successfully stored.", 500, rw)
+	// Merge passwords and alternatives into one slice
+	pws := append([]string{pw}, alternatives...)
+
+	// Encrypt generated passwords and store them
+	for _, pwa := range pws {
+		encryptedPw, err := pk.Encrypt(pwa)
+		if err != nil {
+			writeError("Generated password could not be encoded.", 500, rw)
+			return
+		}
+		err = store.Add(pk.Fingerprint, body.Tag, encryptedPw)
+		if err != nil {
+			writeError("Generated passwords could not be successfully stored.", 500, rw)
+		}
+
+		fmt.Printf("Stored %v => %v\n", pwa, encryptedPw)
 	}
 
 	rw.WriteHeader(201)
