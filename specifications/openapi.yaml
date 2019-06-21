@@ -6,6 +6,8 @@ info:
 paths:
   /ping:
     get:
+      tags:
+        - Maintenance
       summary: Perform a ping / pong health check.
       responses:
         200:
@@ -17,6 +19,8 @@ paths:
                 example: pong
   /password:
     post:
+      tags: 
+        - Passwords
       summary: Generate a password, encrypt and store it.
       requestBody:
         required: true
@@ -45,22 +49,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorPasswordTooShort'
-
+  /password/{public_key_fingerprint}:
+    get:
+      tags: 
+        - Passwords
+      summary: Retrieve all passwords (and their alternatives) from the store.
+      parameters: 
+        - in: path
+          name: public_key_fingerprint
+          required: true
+          description: "The user's public key fingerprint that will be used to locate the user's passwords."
+          schema:
+            $ref: '#/components/schemas/GetPasswordsUsingPKFingerprint'
+        - in: query
+          name: tag
+          required: false
+          description: "The user's public key that will be used to locate the user's passwords."
+          schema:
+            $ref: '#/components/schemas/GetPasswordsUsingTag'
+      responses:
+        200:
+          description: "The user's passwords were successfully retrieved."
+        404:
+          description: "No passwords could be found for this user."
 components:
   schemas:
+    GetPasswordsUsingPKFingerprint:
+      type: string
+      example: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7cnq0P7dtzpY3mHGk [...]
+        -----END PUBLIC KEY-----
+    GetPasswordsUsingTag:
+      type: string
+      example: Google
     PasswordProperties:
       type: object
       properties:
+        tag:
+          type: string
+          example: Google
         alternatives:
           type: integer
         public_key:
-          description: 'The public key that will be used to encrypt and store the password. Only public keys formatted using *PKCS#8* (RFC 5208) are supported.'
+          description: 'The public key that will be used to encrypt and store the password.'
           type: string
           example: |
             -----BEGIN PUBLIC KEY-----
             MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7cnq0P7dtzpY3mHGk [...]
             -----END PUBLIC KEY-----
-
+        public_key_fingerprint:
+          description: "The public key's fingerprint that will be used to store and retrieve the generated password. The fingerprint has to be generated using a SHA256 hash of the public key in the DER encoding."
+          type: string
+          example: ddf1d3fb4f581a043dacea4e67eb87f8886190e391861731ce9955e933c49392
         options:
           type: object
           properties:
