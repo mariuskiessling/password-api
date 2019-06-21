@@ -27,9 +27,18 @@ type generatePasswordBody struct {
 func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	// TODO: Add error handling
 	rBody, _ := ioutil.ReadAll(request.Body)
+	// TODO: Add check for required arguments
 
 	body := &generatePasswordBody{}
 	json.Unmarshal(rBody, body)
+
+	gen := password.Generator{
+		Length:            body.Options.Length,
+		Numbers:           body.Options.Numbers,
+		SpecialCharacters: body.Options.SpecialCharacters,
+	}
+
+	pw, alternatives := gen.Generate(body.Alternatives)
 
 	pk, err := password.LoadPublicKey(body.PublicKey)
 	if err != nil {
@@ -40,6 +49,17 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 		writeError("Provided fingerprint does not match calculated one for the given public key.", 400, rw)
 		return
 	}
+
+	// TODO: Add encryption of passwords before storing
+	err = store.Add(pk.Fingerprint, body.Tag, pw)
+	for _, pwa := range alternatives {
+		err = store.Add(pk.Fingerprint, body.Tag, pwa)
+	}
+	if err != nil {
+		writeError("Generated passwords could not be successfully stored.", 500, rw)
+	}
+
+	store.Print()
 
 	rw.WriteHeader(201)
 }
