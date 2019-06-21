@@ -2,6 +2,7 @@ package password
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -36,6 +37,28 @@ func (store *Store) Add(fingerprint string, tag string, password string) (err er
 // Please note that this does not completely removes the user but only deletes one given password.
 func (store *Store) Remove(fingerprint string, tag string, password string) {
 	// TODO: Implement remove password function
+}
+
+// Retrieve retries a user's passwords from the store. If a tag is supplied
+// only passwords stored under the tag are returned.
+func (store *Store) Retrieve(fingerprint string, tag string) (passwords map[string][]string, err error) {
+	pws, ok := store.passwords[fingerprint]
+	if !ok {
+		return nil, errors.New("No passwords could be found for the supplied public key fingerprint.")
+	}
+
+	if tag != "" {
+		tagPasswords, ok := pws[tag]
+		if !ok {
+			return nil, errors.New("No passwords could be found for this tag.")
+		}
+
+		tagMap := make(map[string][]string)
+		tagMap[tag] = tagPasswords
+		return tagMap, nil
+	}
+
+	return pws, nil
 }
 
 // Print dumps the store's content as a JSON object into stdout.

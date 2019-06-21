@@ -24,6 +24,28 @@ type generatePasswordBody struct {
 	} `json:"options"`
 }
 
+// RetrievePassword retrieves a user's password from the store using the user's
+// public key fingerprint and an optional tag.
+func RetrievePassword(rw http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	fingerprint := params.ByName("public_key_fingerprint")
+	// TODO: Add support for multiple tags
+	tags, ok := request.URL.Query()["tag"]
+	var tag string
+	if !ok {
+		tag = ""
+	} else {
+		tag = tags[0]
+	}
+
+	passwords, err := store.Retrieve(fingerprint, tag)
+	if err != nil {
+		writeError(err.Error(), 404, rw)
+	}
+
+	json, _ := json.Marshal(passwords)
+	writeResponse(string(json), rw)
+}
+
 // GeneratePassword generates a password, encrypts and stores it.
 func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	rBody, err := ioutil.ReadAll(request.Body)

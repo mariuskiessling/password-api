@@ -24,6 +24,7 @@ func Serve(port int) {
 
 func setupRoutes(router *httprouter.Router) *httprouter.Router {
 	router.GET("/ping", handlers.Ping)
+	router.GET("/password/:public_key_fingerprint", handlers.RetrievePassword)
 	router.POST("/password", handlers.GeneratePassword)
 
 	return router
