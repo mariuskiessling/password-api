@@ -2,29 +2,39 @@ package password
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
 // Store stores all generated passwords in an encrypted format.
+//
+// Passwords are stored under the user's public key fingerprint and tag. Any
+// tag can have one or password associated with it. Alternative passwords are
+// stored next to the original one inside the tags' array.
 type Store struct {
-	passwords map[string][]string
+	passwords map[string]map[string][]string
 }
 
 // Init initialises a new password store.
 func Init() (store *Store) {
 	return &Store{
-		passwords: make(map[string][]string),
+		passwords: make(map[string]map[string][]string),
 	}
 }
 
 // Add stores a password in the store using the user's public key.
-func (store *Store) Add(publicKey string, password string) {
-	store.passwords[publicKey] = append(store.passwords[publicKey], (password))
+func (store *Store) Add(fingerprint string, tag string, password string) (err error) {
+	if _, ok := store.passwords[fingerprint][tag]; !ok {
+		return errors.New("The tag is already in use.")
+	}
+
+	store.passwords[fingerprint][tag] = append(store.passwords[fingerprint][tag], (password))
+	return nil
 }
 
 // Remove deletes a user's password from the store using the user's public key.
 // Please note that this does not completely removes the user but only deletes one given password.
-func (store *Store) Remove(publicKey string, password string) {
+func (store *Store) Remove(fingerprint string, tag string, password string) {
 	// TODO: Implement remove password function
 }
 
