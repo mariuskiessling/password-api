@@ -85,6 +85,11 @@ components:
       example: Google
     PasswordProperties:
       type: object
+      required: 
+        - tag
+        - public_key
+        - public_key_fingerprint
+        - options
       properties:
         tag:
           type: string
@@ -104,6 +109,8 @@ components:
           example: ddf1d3fb4f581a043dacea4e67eb87f8886190e391861731ce9955e933c49392
         options:
           type: object
+          required: 
+                - length
           properties:
             length:
               type: integer
