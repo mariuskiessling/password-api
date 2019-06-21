@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -32,15 +31,15 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 	body := &generatePasswordBody{}
 	json.Unmarshal(rBody, body)
 
-	gen := password.Generator{
-		Length:            body.Options.Length,
-		Numbers:           body.Options.Numbers,
-		SpecialCharacters: body.Options.SpecialCharacters,
+	pk, err := password.LoadPublicKey(body.PublicKey)
+	if err != nil {
+		writeError(err.Error(), 400, rw)
+		return
 	}
-
-	pw, alternatives := gen.Generate(body.Alternatives)
-	fmt.Println(pw)
-	fmt.Println(alternatives)
+	if pk.Fingerprint != body.PublicKeyFingerprint {
+		writeError("Provided fingerprint does not match calculated one for the given public key.", 400, rw)
+		return
+	}
 
 	rw.WriteHeader(201)
 }
