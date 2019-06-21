@@ -2,7 +2,6 @@ package password
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -27,10 +26,6 @@ func (store *Store) Add(fingerprint string, tag string, password string) (err er
 	// Initialize fingerprint map if fingerprint is unknown
 	if _, ok := store.passwords[fingerprint]; !ok {
 		store.passwords[fingerprint] = make(map[string][]string)
-	}
-
-	if _, ok := store.passwords[fingerprint][tag]; ok {
-		return errors.New("The tag is already in use.")
 	}
 
 	store.passwords[fingerprint][tag] = append(store.passwords[fingerprint][tag], (password))
