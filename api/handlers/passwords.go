@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -25,12 +26,30 @@ type generatePasswordBody struct {
 
 // GeneratePassword generates a password, encrypts and stores it.
 func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-	// TODO: Add error handling
-	rBody, _ := ioutil.ReadAll(request.Body)
-	// TODO: Add check for required arguments
+	rBody, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		writeError("Something went wrong...", 500, rw)
+		return
+	}
 
 	body := &generatePasswordBody{}
 	json.Unmarshal(rBody, body)
+
+	// Check for required fields
+	if body.Tag == "" || body.PublicKey == "" || body.PublicKeyFingerprint == "" {
+		writeError("Missing paramters. Please check the API specification.", 400, rw)
+		return
+	}
+	if body.Options.Numbers <= 0 || body.Options.Length >= 2048 {
+		writeError("Password length can not be smaller than 0 and larger than 2048.", 400, rw)
+		return
+	}
+
+	// TODO: Add check for required arguments
+	// Check for required fields
+	if &body.Tag == nil {
+		fmt.Println("daoiwjdoaiwjd")
+	}
 
 	gen := password.Generator{
 		Length:            body.Options.Length,
@@ -58,8 +77,6 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 	if err != nil {
 		writeError("Generated passwords could not be successfully stored.", 500, rw)
 	}
-
-	store.Print()
 
 	rw.WriteHeader(201)
 }
