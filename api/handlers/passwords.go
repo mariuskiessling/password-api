@@ -66,6 +66,10 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 		writeError("Password length can not be smaller than 0 and larger than 2048.", 400, rw)
 		return
 	}
+	if body.Options.Numbers+body.Options.SpecialCharacters > body.Options.Length {
+		writeError("Number of numbers and special characters may not exceed the password's length.", 400, rw)
+		return
+	}
 
 	gen := password.Generator{
 		Length:            body.Options.Length,
