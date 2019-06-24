@@ -70,8 +70,9 @@ func generateSpecialCharsReplacements(b []byte, chars int) (pw []byte) {
 	for i := 0; i < chars; i++ {
 		index := generateNumber(int64(len(b)))
 
-		// Generate a new index while the generated index contains a number
-		for byteIsNumber(b[index]) {
+		// Generate a new index while the generated index contains a number or
+		// already contains a special character
+		for byteIsNumber(b[index]) || byteIsSpecialCharacter(b[index]) {
 			index = generateNumber(int64(len(b)))
 		}
 
@@ -146,4 +147,16 @@ func generateNumber(max int64) int {
 
 func byteIsNumber(b byte) bool {
 	return b >= 48 && b <= 57
+}
+
+// TODO: This is quite a costly operation. Maybe introduce specialCharacters
+// map?
+func byteIsSpecialCharacter(b byte) bool {
+	for _, specialCharacter := range specialCharacters {
+		if b == specialCharacter {
+			return true
+		}
+	}
+
+	return false
 }
