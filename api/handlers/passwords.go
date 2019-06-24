@@ -8,9 +8,10 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/mariuskiessling/password-api/password"
+	"github.com/mariuskiessling/password-api/password/store"
 )
 
-var store *password.Store = password.Init()
+var storage *store.Store = store.Init()
 
 type generatePasswordBody struct {
 	Tag                  string `json:"tag"`
@@ -37,7 +38,7 @@ func RetrievePassword(rw http.ResponseWriter, request *http.Request, params http
 		tag = tags[0]
 	}
 
-	passwords, err := store.Retrieve(fingerprint, tag)
+	passwords, err := storage.Retrieve(fingerprint, tag)
 	if err != nil {
 		writeError(err.Error(), 404, rw)
 	}
@@ -99,7 +100,7 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 			writeError("Generated password could not be encoded.", 500, rw)
 			return
 		}
-		err = store.Add(pk.Fingerprint, body.Tag, encryptedPw)
+		err = storage.Add(pk.Fingerprint, body.Tag, encryptedPw)
 		if err != nil {
 			writeError("Generated passwords could not be successfully stored.", 500, rw)
 		}
