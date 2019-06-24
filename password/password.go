@@ -3,7 +3,6 @@ package password
 import (
 	"bytes"
 	"crypto/rand"
-	"fmt"
 	"log"
 	"math/big"
 	"strconv"
@@ -93,7 +92,6 @@ func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
 
 		// TODO: Rewrite this ugly conversion from int -> string -> []byte -> byte
 		r := []byte(strconv.Itoa(generateNumber(10)))
-		//fmt.Println(index, r)
 		b[index] = r[0]
 	}
 
@@ -113,7 +111,7 @@ func generateVowelReplacements(b []byte, maxNumbers int) (pw []byte, replacedVow
 
 				b[i] = mappingVowelToNumber[b[i]]
 
-				fmt.Printf("--\n%v -> %v\n--\n", string(oldPw), string(b))
+				log.Printf("Vowel replacement during generation: %v -> %v\n", string(oldPw), string(b))
 
 				replacedVowels++
 			}

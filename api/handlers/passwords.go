@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -105,7 +105,7 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 			writeError("Generated passwords could not be successfully stored.", 500, rw)
 		}
 
-		fmt.Printf("Stored %v => %v\n", pwa, encryptedPw)
+		log.Printf("Stored password: %v -> %v ...\n", pwa, encryptedPw[:10])
 	}
 
 	rw.WriteHeader(201)
