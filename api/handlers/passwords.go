@@ -90,7 +90,8 @@ func GeneratePassword(rw http.ResponseWriter, request *http.Request, _ httproute
 		return
 	}
 
-	// Merge passwords and alternatives into one slice
+	// Merge passwords and alternatives into one slice in order to reduce
+	// iterations when encrypting and saving
 	pws := append([]string{pw}, alternatives...)
 
 	// Encrypt generated passwords and store them

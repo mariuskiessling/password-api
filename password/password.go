@@ -48,7 +48,7 @@ func (gen *Generator) Generate(numAlternatives int) (password string, alternativ
 	return
 }
 
-// GeneratePassword ... Todo: Add documentation
+// GeneratePassword generates *one* password for the given generator.
 func (gen *Generator) GeneratePassword() (password string) {
 	// Step 1: Populate the password array only with random letters (both upper- and lower case)
 	pw := generateLetterBytes(gen.Length)
@@ -71,6 +71,8 @@ func generateSpecialCharsReplacements(b []byte, chars int) (pw []byte) {
 
 		// Generate a new index while the generated index contains a number or
 		// already contains a special character
+		// -> TODO: An easier solution would be to check if the given byte is a
+		// letter
 		for byteIsNumber(b[index]) || byteIsSpecialCharacter(b[index]) {
 			index = generateNumber(int64(len(b)))
 		}
@@ -80,6 +82,7 @@ func generateSpecialCharsReplacements(b []byte, chars int) (pw []byte) {
 
 	return b
 }
+
 func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
 	for i := 0; i < maxNumbers; i++ {
 		index := generateNumber(int64(len(b)))
@@ -90,7 +93,6 @@ func generateNumberReplacements(b []byte, maxNumbers int) (pw []byte) {
 			index = generateNumber(int64(len(b)))
 		}
 
-		// TODO: Rewrite this ugly conversion from int -> string -> []byte -> byte
 		r := []byte(strconv.Itoa(generateNumber(10)))
 		b[index] = r[0]
 	}
@@ -147,8 +149,6 @@ func byteIsNumber(b byte) bool {
 	return b >= 48 && b <= 57
 }
 
-// TODO: This is quite a costly operation. Maybe introduce specialCharacters
-// map?
 func byteIsSpecialCharacter(b byte) bool {
 	for _, specialCharacter := range specialCharacters {
 		if b == specialCharacter {
