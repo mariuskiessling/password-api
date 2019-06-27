@@ -31,3 +31,13 @@ A rendered version of the documentation can be found
    # also located inside the example directory.
    generate_passwords example
    ```
+
+## Config
+On startup the file `config.json` is loaded and parsed. You can tweak the
+following paramters:
+- **`port`**: The port the API listens on.
+- **`env`**: The environment the application is executed in. Only *development*
+  and *production* are valid values. In the production environment, all output
+  is suppressed. Inside the development environment, the mutation steps for
+  each vowel replacement is shown as well as the generated password both in its
+  unencrypted and encrypted form.
